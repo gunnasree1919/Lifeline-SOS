@@ -4,11 +4,6 @@
   <meta charset="UTF-8" />
   <title>LifelineSOS</title>
 
-  <!-- PWA Support -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0f172a">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <!-- React CDN -->
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -22,14 +17,5 @@
 
   <!-- Load your app -->
   <script type="text/babel" src="./lifeline_preview.jsx"></script>
-
-  <!-- Register Service Worker (required for installable app) -->
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("service-worker.js")
-        .then(() => console.log("Service Worker Registered"));
-    }
-  </script>
-
 </body>
 </html>
