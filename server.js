@@ -14,12 +14,15 @@ function loadEnvFromFile() {
 
   raw.split(/\r?\n/).forEach((line) => {
     const trimmed = line.trim();
+
     if (!trimmed || trimmed.startsWith("#")) return;
 
     const idx = trimmed.indexOf("=");
+
     if (idx <= 0) return;
 
     const key = trimmed.slice(0, idx).trim();
+
     let value = trimmed.slice(idx + 1).trim();
 
     if (
@@ -42,17 +45,13 @@ app.use(express.json());
 
 
 // ===============================
-// 📁 SERVE FRONTEND FILES (FIXED)
+// 🌐 SERVE FRONTEND FILES
 // ===============================
 
-const publicPath = path.resolve(__dirname);
-
-console.log("Serving frontend from:", publicPath);
-
-app.use(express.static(publicPath));
+app.use(express.static(__dirname));
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(publicPath, "index.html"));
+  res.sendFile(path.join(__dirname, "index.html"));
 });
 
 
@@ -61,23 +60,40 @@ app.get("/", (req, res) => {
 // ===============================
 
 const accountSid = (process.env.TWILIO_ACCOUNT_SID || "").trim();
+
 const authToken = (process.env.TWILIO_AUTH_TOKEN || "").trim();
-const twilioNumber =
-  (process.env.TWILIO_FROM_NUMBER ||
-   process.env.TWILIO_FROM ||
-   "").trim();
 
-const port = Number(process.env.PORT) || 3000;
+const twilioNumber = (
+  process.env.TWILIO_FROM_NUMBER ||
+  process.env.TWILIO_FROM ||
+  ""
+).trim();
 
-const twilioConfigured =
-  Boolean(accountSid && authToken && twilioNumber);
+const port = process.env.PORT || 3000;
+
+const twilioConfigured = Boolean(
+  accountSid &&
+  authToken &&
+  twilioNumber
+);
 
 const client = twilioConfigured
   ? twilio(accountSid, authToken)
   : null;
 
 if (!twilioConfigured) {
-  console.warn("⚠️ Twilio config missing");
+  console.warn("⚠️ Twilio is not fully configured.");
+
+  const missing = [];
+
+  if (!accountSid) missing.push("TWILIO_ACCOUNT_SID");
+
+  if (!authToken) missing.push("TWILIO_AUTH_TOKEN");
+
+  if (!twilioNumber)
+    missing.push("TWILIO_FROM_NUMBER");
+
+  console.warn("⚠️ Missing:", missing.join(", "));
 }
 
 
@@ -85,25 +101,24 @@ if (!twilioConfigured) {
 // ❤️ HEALTH CHECK ROUTE
 // ===============================
 
-app.get("/health", (_, res) => {
+app.get("/health", (req, res) => {
   res.json({
     ok: true,
-    twilioConfigured
+    twilioConfigured,
   });
 });
 
 
 // ===============================
-// 📩 SEND SMS ROUTE
+// 📩 SEND SINGLE SMS ROUTE
 // ===============================
 
 app.post("/send-sms", async (req, res) => {
-
   console.log("📥 Incoming request:", req.body);
 
   if (!twilioConfigured) {
     return res.status(503).json({
-      error: "Twilio not configured"
+      error: "Twilio not configured",
     });
   }
 
@@ -111,43 +126,28 @@ app.post("/send-sms", async (req, res) => {
 
   if (!to) {
     return res.status(400).json({
-      error: "Phone number missing"
+      error: "Phone number missing",
     });
   }
 
   try {
-
     const message = await client.messages.create({
-
       body:
         body ||
         "🚨 Emergency Alert! Patient needs attention immediately.",
-
       from: twilioNumber,
-
-      to: to
-
+      to,
     });
-
-    console.log("✅ SMS sent:", message.sid);
 
     res.json({
       sid: message.sid,
-      status: message.status
+      status: message.status,
     });
-
-  }
-
-  catch (error) {
-
-    console.log("❌ Twilio error:", error.message);
-
+  } catch (error) {
     res.status(500).json({
-      error: error.message
+      error: error.message,
     });
-
   }
-
 });
 
 
@@ -156,10 +156,5 @@ app.post("/send-sms", async (req, res) => {
 // ===============================
 
 app.listen(port, () => {
-
-  console.log("");
-  console.log("🚑 LifeLine Alert Server Running");
-  console.log("🌍 Server running on port:", port);
-  console.log("");
-
+  console.log("🚀 Server running on port:", port);
 });
