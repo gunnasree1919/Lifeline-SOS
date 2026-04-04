@@ -42,13 +42,17 @@ app.use(express.json());
 
 
 // ===============================
-// 📁 SERVE FRONTEND FILES
+// 📁 SERVE FRONTEND FILES (FIXED)
 // ===============================
 
-app.use(express.static(__dirname));
+const publicPath = path.resolve(__dirname);
+
+console.log("Serving frontend from:", publicPath);
+
+app.use(express.static(publicPath));
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+  res.sendFile(path.join(publicPath, "index.html"));
 });
 
 
@@ -58,17 +62,15 @@ app.get("/", (req, res) => {
 
 const accountSid = (process.env.TWILIO_ACCOUNT_SID || "").trim();
 const authToken = (process.env.TWILIO_AUTH_TOKEN || "").trim();
-const twilioNumber = (
-  process.env.TWILIO_FROM_NUMBER ||
-  process.env.TWILIO_FROM ||
-  ""
-).trim();
+const twilioNumber =
+  (process.env.TWILIO_FROM_NUMBER ||
+   process.env.TWILIO_FROM ||
+   "").trim();
 
 const port = Number(process.env.PORT) || 3000;
 
-const twilioConfigured = Boolean(
-  accountSid && authToken && twilioNumber
-);
+const twilioConfigured =
+  Boolean(accountSid && authToken && twilioNumber);
 
 const client = twilioConfigured
   ? twilio(accountSid, authToken)
@@ -134,7 +136,9 @@ app.post("/send-sms", async (req, res) => {
       status: message.status
     });
 
-  } catch (error) {
+  }
+
+  catch (error) {
 
     console.log("❌ Twilio error:", error.message);
 
@@ -155,7 +159,7 @@ app.listen(port, () => {
 
   console.log("");
   console.log("🚑 LifeLine Alert Server Running");
-  console.log("🌍 Server live on port:", port);
+  console.log("🌍 Server running on port:", port);
   console.log("");
 
 });
