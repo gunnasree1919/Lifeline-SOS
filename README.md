@@ -1,4 +1,4 @@
- 🚑 Lifeline-SOS
+  Lifeline-SOS
 
 LifelineSOS is an emergency healthcare monitoring and alert system that enables patients to securely register medical details, monitor vitals in real time, and instantly notify doctors and emergency contacts during critical situations using automated SMS alerts.
 
